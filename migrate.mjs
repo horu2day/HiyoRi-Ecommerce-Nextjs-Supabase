@@ -1,10 +1,17 @@
-// migrate.ts
 import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
-import { env } from "@/env.mjs";
+import * as dotenv from "dotenv";
 
-const sql = postgres(env.DATABASE_URL, { max: 1 });
+dotenv.config();
+
+const { DATABASE_URL } = process.env;
+
+if (!DATABASE_URL) {
+  throw new Error("DATABASE_URL is not set in the environment variables");
+}
+
+const sql = postgres(DATABASE_URL, { max: 1 });
 const db = drizzle(sql);
 
 async function main() {
