@@ -64,7 +64,7 @@ export function SignInForm() {
 
       // RPC를 통해 is_super_admin 상태 확인
       const { data: isAdmin, error: adminError } = await supabase.rpc(
-        "get_user_admin_status"
+        "get_user_admin_status",
       );
 
       if (adminError) {

@@ -36,7 +36,7 @@ export const isAdmin = async (currentUser: User | null): Promise<boolean> => {
   const supabase = createClient({ cookieStore });
 
   const { data: isAdminUser, error } = await supabase.rpc(
-    "get_user_admin_status"
+    "get_user_admin_status",
   );
 
   if (error) {
