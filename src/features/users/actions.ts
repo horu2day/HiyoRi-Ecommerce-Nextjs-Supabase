@@ -8,15 +8,18 @@ import { cookies } from "next/headers";
 import { profiles } from "../../lib/supabase/schema";
 import { AdminUserFormData } from "@/features/users/validations";
 import { env } from "@/env.mjs";
-import createClient from "@/lib/supabase/server";
+
+import { createClient } from "@/lib/supabase/server";
 
 export const getCurrentUser = async () => {
   const cookieStore = cookies();
-  const supabase = createServerClient({ cookieStore });
-
-  const userResponse = await supabase.auth.getUser();
-  return userResponse.data.user;
+  const supabase = createClient({ cookieStore });
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return user;
 };
+
 export const getCurrentUserSession = async () => {
   const cookieStore = cookies();
   const supabase = createServerClient({ cookieStore });
@@ -26,8 +29,23 @@ export const getCurrentUserSession = async () => {
   return userResponse.data.session;
 };
 
-export const isAdmin = (currentUser: User | null) =>
-  currentUser?.app_metadata.isAdmin;
+export const isAdmin = async (currentUser: User | null): Promise<boolean> => {
+  if (!currentUser) return false;
+
+  const cookieStore = cookies();
+  const supabase = createClient({ cookieStore });
+
+  const { data: isAdminUser, error } = await supabase.rpc(
+    "get_user_admin_status"
+  );
+
+  if (error) {
+    console.error("Error checking admin status:", error);
+    return false;
+  }
+
+  return !!isAdminUser;
+};
 
 export const getUser = async ({ userId }: { userId: string }) => {
   const cookieStore = cookies();

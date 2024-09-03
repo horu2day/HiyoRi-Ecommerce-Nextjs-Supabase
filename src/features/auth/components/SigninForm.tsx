@@ -44,22 +44,60 @@ export function SignInForm() {
     if (error) toast({ title: "Error", description: error });
   }, [searchParams]);
 
-  function onSubmit({ email, password }: FormData) {
+  async function onSubmit({ email, password }: FormData) {
     startTransition(async () => {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      console.log("data", data);
+      const { data: authData, error: authError } =
+        await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
 
-      if (error) {
-        toast({ title: "Error", description: error.message });
+      if (authError) {
+        toast({ title: "Error", description: authError.message });
+        return;
+      }
+
+      if (!authData.user) {
+        toast({ title: "Error", description: "User data not found" });
+        return;
+      }
+
+      // RPC를 통해 is_super_admin 상태 확인
+      const { data: isAdmin, error: adminError } = await supabase.rpc(
+        "get_user_admin_status"
+      );
+
+      if (adminError) {
+        console.error("Failed to fetch admin status:", adminError);
+        toast({ title: "Error", description: "Failed to fetch user data" });
+        return;
+      }
+
+      if (isAdmin) {
+        toast({ title: "Admin Login Success" });
+        router.push("/admin/dashboard");
       } else {
-        toast({ title: "Login Sucess" });
+        toast({ title: "Login Success" });
         router.push(searchParams?.get("from") || "/");
       }
     });
   }
+  // function onSubmit({ email, password }: FormData) {
+  //   startTransition(async () => {
+  //     const { data, error } = await supabase.auth.signInWithPassword({
+  //       email,
+  //       password,
+  //     });
+  //     console.log("data", data);
+
+  //     if (error) {
+  //       toast({ title: "Error", description: error.message });
+  //     } else {
+  //       toast({ title: "Login Sucess" });
+  //       router.push(searchParams?.get("from") || "/");
+  //     }
+  //   });
+  // }
 
   return (
     <Form {...form}>

@@ -1,5 +1,4 @@
 /** @type {import('next').NextConfig} */
-
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
@@ -18,6 +17,12 @@ const nextConfig = {
         hostname: "hiyori-backpack.s3.us-west-2.amazonaws.com",
       },
     ],
+  },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.devtool = "source-map";
+    }
+    return config;
   },
   experimental: {
     serverComponentsExternalPackages: ["@aws-sdk/client-s3", "sharp"],
