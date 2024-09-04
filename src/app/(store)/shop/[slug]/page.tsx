@@ -70,12 +70,21 @@ const ProductDetailPageQuery = gql(/* GraphQL */ `
 `);
 
 async function ProductDetailPage({ params }: Props) {
+  //URL 디코딩
+  const decodedSlug = decodeURIComponent(params.slug);
+
   const { data, error } = await getClient().query(ProductDetailPageQuery, {
-    productSlug: params.slug as string,
+    productSlug: decodedSlug,
   });
 
-  if (!data || !data.productsCollection || !data.productsCollection.edges)
+  if (
+    !data ||
+    !data.productsCollection ||
+    !data.productsCollection.edges ||
+    data.productsCollection.edges.length === 0
+  ) {
     return notFound();
+  }
 
   const { id, name, description, price, commentsCollection, totalComments } =
     data.productsCollection.edges[0].node;
